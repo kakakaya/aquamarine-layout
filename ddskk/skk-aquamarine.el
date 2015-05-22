@@ -7,9 +7,42 @@
 
 ;;; Commentary:
 
-;; How to use:
-;; insert below to your init.el (or some configuration file).
-;; (require 'skk-aquamarine)
+;; dvorak 配列での拡張ローマ字入力 "藍玉配列(Aquamarine Layout)" を SKK で使うための設定です．
+;;
+;; 使い方 - 下記の設定を .skk に加えてください．
+;;          その後 Emacs(Mule) を再起動すれば skk による 藍玉配列 での
+;;          入力が可能です．
+;;
+;;          (require 'skk-aquamarine)
+;;
+;;
+;;   注意 1 - 藍玉配列 では "q" を "おん" の入力に使うので，"q" のもともとの
+;;            機能である `skk-toggle-kana' は "\" に割当てています．
+;;            SKK 標準で "\" の `skk-input-by-code-or-menu' は割当てて
+;;            いないのでマニュアルで呼出す必要があります．
+;;
+;;        2 - 同様に "Q" も使用できませんので
+;;            `skk-set-henkan-point-subr' は "|" に割当てています．
+;;
+;;        3 - 純正の 藍玉配列 では "la" で "ぁ" を入力します．しかし
+;;            SKK では l を ASCII/かなモードの切り替えキーとして
+;;            使用するので，"`a" で "ぁ" を入力できるようにしています．
+;;
+;;        4 - SKK 標準の "z*" (「〜」「…」など)，"x*" (「ぃ」「ゎ」な
+;;            ど)は "`*" に割当てています．
+;;
+;;        5 - デフォルトでは子音の後の "y" には2重母音の "ui" を割当て
+;;            ているので，"y" を使った拗音の入力は無効です．"y" を使っ
+;;            て拗音を入力したい場合は `skk-aquamarine-use-normal-y' を
+;;            non-nil に設定して skk を起動して下さい．
+;;            (skk-aquamarineをロードしたときの値が有効になります)
+;;
+;; キー割当て変更点
+;;                              SKK標準   藍玉配列
+;; `skk-toggle-kana'               q         \
+;; `skk-set-henkan-point-subr'     Q         |
+;; `skk-input-by-code-or-menu'     \     割当てなし
+;; `skk-purge-from-jisyo'          X     割当てなし
 
 ;;; Code:
 (eval-when-compile
@@ -19,7 +52,7 @@
   (defvar skk-jisx0201-rule-list)
   (defvar skk-jisx0201-base-rule-list))
 
-(defvar skk-act-unnecessary-base-rule-list
+(defvar skk-aquamarine-unnecessary-base-rule-list
   (let ((list
          `("bb" "cc" "dd" "ff" "gg" "jj" "kk" "pp" "rr" "ss" "tt" "vv"
            "ww" "xx" "yy" "zz"
@@ -36,8 +69,8 @@
            "xtsu" "xtu"
            "xwa" "xwe" "xwi"
            "xya" "xyo" "xyu")))
-    ;; skk-act-use-normal-y が nil であれば拗音も削除
-    (unless skk-act-use-normal-y
+    ;; skk-aquamarine-use-normal-y が nil であれば拗音も削除
+    (unless skk-aquamarine-use-normal-y
       (setq list
             (append list
                     '("bya" "bye" "byi" "byo" "byu"
@@ -55,7 +88,7 @@
                       "zya" "zye" "zyi" "zyo" "zyu"))))
     list))
 
-(defvar skk-act-additional-rom-kana-rule-list
+(defvar skk-aquamarine-additional-rom-kana-rule-list
   (let ((list
          '(("\\" nil skk-toggle-kana)
            ("|" nil skk-set-henkan-point-subr)
@@ -636,7 +669,7 @@
            ("wmp" nil ("ウゥウ" . "うぅう"))
            ("wm." nil ("ウェイ" . "うぇい"))
            ("wm," nil ("ウォウ" . "うぉう")))))
-    (unless skk-act-use-normal-y
+    (unless skk-aquamarine-use-normal-y
       (setq list
             (append list
                     '(("cy" nil ("クイ" . "くい"))
@@ -752,7 +785,7 @@
       (append skk-set-henkan-point-key '(?\" ?: ?Q ?X)))
 
 ;; skk-rom-kana-base-rule-list から変換規則を削除する
-(dolist (str skk-act-unnecessary-base-rule-list)
+(dolist (str skk-aquamarine-unnecessary-base-rule-list)
   (setq skk-rom-kana-base-rule-list
         (skk-del-alist str skk-rom-kana-base-rule-list)))
 
@@ -762,14 +795,14 @@
     (setq skk-rom-kana-rule-list
           (skk-del-alist str skk-rom-kana-rule-list))))
 
-;; ACT 特有の変換規則を追加する
-(dolist (rule skk-act-additional-rom-kana-rule-list)
+;; 藍玉配列特有の変換規則を追加する
+(dolist (rule skk-aquamarine-additional-rom-kana-rule-list)
   (add-to-list 'skk-rom-kana-rule-list rule))
 
 ;; for jisx0201
 (eval-after-load "skk-jisx0201"
   '(progn
-     (dolist (str skk-act-unnecessary-base-rule-list)
+     (dolist (str skk-aquamarine-unnecessary-base-rule-list)
        (setq skk-jisx0201-base-rule-list
              (skk-del-alist str skk-jisx0201-base-rule-list)))
 
@@ -778,7 +811,7 @@
          (setq skk-jisx0201-base-rule-list
                (skk-del-alist str skk-jisx0201-base-rule-list))))
 
-     (dolist (rule skk-act-additional-rom-kana-rule-list)
+     (dolist (rule skk-aquamarine-additional-rom-kana-rule-list)
        (add-to-list 'skk-jisx0201-rule-list
                     (if (listp (nth 2 rule))
                         (list (nth 0 rule) (nth 1 rule)
@@ -789,7 +822,7 @@
            (skk-compile-rule-list skk-jisx0201-base-rule-list
                                   skk-jisx0201-rule-list))))
 
-(run-hooks 'skk-act-load-hook)
+(run-hooks 'skk-aquamarine-load-hook)
 
 (provide 'skk-aquamarine)
 ;;; skk-aquamarine.el ends here
