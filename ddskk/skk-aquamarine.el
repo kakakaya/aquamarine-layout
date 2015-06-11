@@ -52,6 +52,9 @@
   (defvar skk-jisx0201-rule-list)
   (defvar skk-jisx0201-base-rule-list))
 
+(defcustom skk-aquamarine-use-normal-y nil
+  "non-nilにするとyを使った拗音の入力が可能になる")
+
 (defvar skk-aquamarine-unnecessary-base-rule-list
   (let ((list
          `("bb" "cc" "dd" "ff" "gg" "jj" "kk" "pp" "rr" "ss" "tt" "vv"
